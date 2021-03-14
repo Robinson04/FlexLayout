@@ -59,6 +59,14 @@ abstract class Node {
     getType() {
         return this._attributes.type as string;
     }
+    
+    getSelectedNode(): Node | undefined {
+        return this._attributes.selected != undefined ? this._children[this._attributes.selected] : undefined;
+    }
+    
+    getSelectedNodeId(): string | undefined {
+        return this.getSelectedNode()?.getId();
+    }
 
     getParent() {
         return this._parent;
