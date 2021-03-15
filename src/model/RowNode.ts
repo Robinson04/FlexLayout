@@ -10,6 +10,7 @@ import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import SplitterNode from "./SplitterNode";
 import TabSetNode from "./TabSetNode";
+import Attribute from "../Attribute";
 
 class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
@@ -39,7 +40,8 @@ class RowNode extends Node implements IDropTarget {
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", RowNode.TYPE, true);
-        attributeDefinitions.add("id", undefined);
+        attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
+        attributeDefinitions.add("id", undefined, true);
 
         attributeDefinitions.add("weight", 100);
         attributeDefinitions.add("width", undefined);

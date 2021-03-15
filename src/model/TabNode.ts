@@ -23,10 +23,10 @@ class TabNode extends Node implements IDraggable {
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", TabNode.TYPE, true);
-        attributeDefinitions.add("id", undefined).setType(Attribute.ID);
+        attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
+        attributeDefinitions.add("id", undefined, true).setType(Attribute.ID);
 
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
-        attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType(Attribute.JSON);
         attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
 

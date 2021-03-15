@@ -44,12 +44,14 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", TabSetNode.TYPE, true);
-        attributeDefinitions.add("id", undefined).setType(Attribute.ID);
+        attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
+        attributeDefinitions.add("id", undefined, true).setType(Attribute.ID);
 
         attributeDefinitions.add("weight", 100);
+        attributeDefinitions.add("selected", 0);
+
         attributeDefinitions.add("width", undefined);
         attributeDefinitions.add("height", undefined);
-        attributeDefinitions.add("selected", 0);
         attributeDefinitions.add("name", undefined).setType(Attribute.STRING);
 
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");

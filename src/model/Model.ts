@@ -15,6 +15,9 @@ import Node from "./Node";
 import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
+import { v4 as uuid4 } from 'uuid';
+
+
 
 /** @hidden @internal */
 export interface ILayoutMetrics {
@@ -66,7 +69,9 @@ class Model {
         attributeDefinitions.add("tabDragSpeed", 0.3).setType(Attribute.NUMBER);
 
         // tabset
-        attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", false).setType(Attribute.BOOLEAN);
+        // The fork changed the tabSetEnableDeleteWhenEmpty default value from true to false
+        
         attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute.BOOLEAN);
@@ -99,8 +104,6 @@ class Model {
     /** @hidden @internal */
     private _idMap: JSMap<Node>;
     /** @hidden @internal */
-    private _nextId: number;
-    /** @hidden @internal */
     private _changeListener?: () => void;
     /** @hidden @internal */
     private _root?: RowNode;
@@ -125,7 +128,6 @@ class Model {
     private constructor() {
         this._attributes = {};
         this._idMap = {};
-        this._nextId = 0;
         this._borders = new BorderSet(this);
         this._pointerFine = true;
     }
@@ -210,6 +212,18 @@ class Model {
     getNodeById(id: string) {
         return this._idMap[id];
     }
+    
+    searchNodesByAttr(attributeKey: string, attributeValue: string): Node[] {
+        const foundNodes: Node[] = [];
+        for (let nodeKeyId in this._idMap as { [key: string]: any }) {
+            const node = this._idMap[nodeKeyId];
+            const retrievedAttributeValue = node._getAttr(attributeKey);
+            if (retrievedAttributeValue === attributeValue) {
+                foundNodes.push(node);
+            }
+        }
+        return foundNodes;
+    }
 
     /**
      * Update the node tree by performing the given action,
@@ -217,7 +231,6 @@ class Model {
      * @param action the action to perform
      */
     doAction(action: Action) {
-        // console.log(action);
         switch (action.type) {
             case Actions.ADD_NODE: {
                 const newNode = new TabNode(this, action.data.json, true);
@@ -438,15 +451,18 @@ class Model {
     _updateAttrs(json: any) {
         Model._attributeDefinitions.update(json, this._attributes);
     }
+    
+    private static generateId(): string {
+        return uuid4().toString();
+    }
 
     /** @hidden @internal */
     _nextUniqueId() {
-        this._nextId++;
-        while (this._idMap["#" + this._nextId] !== undefined) {
-            this._nextId++;
+        let generatedId = Model.generateId();
+        while (this._idMap[generatedId] !== undefined) {
+            generatedId = Model.generateId();
         }
-
-        return "#" + this._nextId;
+        return generatedId;
     }
 
     /** @hidden @internal */

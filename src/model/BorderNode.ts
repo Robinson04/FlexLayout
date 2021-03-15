@@ -37,6 +37,7 @@ class BorderNode extends Node implements IDropTarget {
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", BorderNode.TYPE, true);
+        attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
 
         attributeDefinitions.add("selected", -1);
         attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN);
