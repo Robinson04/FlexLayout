@@ -55,9 +55,17 @@ abstract class Node {
     getModel() {
         return this._model;
     }
+    
+    getModelPayload(): { [key: string]: any } | undefined {
+        return this._attributes.modelPayload;
+    }
 
     getType() {
         return this._attributes.type as string;
+    }
+    
+    getComponent(): string | undefined {
+        return this._attributes.component;
     }
     
     getSelectedNode(): Node | undefined {

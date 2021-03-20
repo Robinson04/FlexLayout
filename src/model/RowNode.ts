@@ -42,6 +42,7 @@ class RowNode extends Node implements IDropTarget {
         attributeDefinitions.add("type", RowNode.TYPE, true);
         attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
         attributeDefinitions.add("id", undefined, true);
+        attributeDefinitions.add("modelPayload", undefined).setType(Attribute.JSON);
 
         attributeDefinitions.add("weight", 100);
         attributeDefinitions.add("width", undefined);

@@ -18,6 +18,11 @@ import TabSetNode from "./TabSetNode";
 import { v4 as uuid4 } from 'uuid';
 
 
+export interface SearchCriteriaModel {
+    attributePathElements: string[];
+    expectedValue: any;
+}
+
 
 /** @hidden @internal */
 export interface ILayoutMetrics {
@@ -33,10 +38,11 @@ class Model {
     /**
      * Loads the model from the given json object
      * @param json the json model to load
+     * @param parentNodeId
      * @returns {Model} a new Model object
      */
-    static fromJson(json: any) {
-        const model = new Model();
+    static fromJson(json: any, parentNodeId: string | null = null) {
+        const model = new Model(parentNodeId);
         Model._attributeDefinitions.fromJson(json.global, model._attributes);
 
         if (json.borders) {
@@ -52,6 +58,8 @@ class Model {
     /** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
+        attributeDefinitions.add("managerId", undefined).setType(Attribute.ID);
+        
         // splitter
         attributeDefinitions.add("splitterSize", -1).setType(Attribute.INT);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN);
@@ -69,9 +77,7 @@ class Model {
         attributeDefinitions.add("tabDragSpeed", 0.3).setType(Attribute.NUMBER);
 
         // tabset
-        attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", false).setType(Attribute.BOOLEAN);
-        // The fork changed the tabSetEnableDeleteWhenEmpty default value from true to false
-        
+        attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute.BOOLEAN);
@@ -119,13 +125,13 @@ class Model {
     private _borderRects: { inner: Rect; outer: Rect } = { inner: Rect.empty(), outer: Rect.empty() };
     /** @hidden @internal */
     private _pointerFine: boolean;
-
+    
     /**
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
      *  @hidden @internal
      */
 
-    private constructor() {
+    private constructor(public readonly parentNodeId: string | null) {
         this._attributes = {};
         this._idMap = {};
         this._borders = new BorderSet(this);
@@ -135,6 +141,14 @@ class Model {
     /** @hidden @internal */
     _setChangeListener(listener: (() => void) | undefined) {
         this._changeListener = listener;
+    }
+    
+    getManagerId(): string {
+        return this._attributes.managerId;
+    }
+    
+    setManagerId(value: string): string {
+        return this._attributes.managerId = value;
     }
 
     /**
@@ -213,18 +227,49 @@ class Model {
         return this._idMap[id];
     }
     
-    searchNodesByAttr(attributeKey: string, attributeValue: string): Node[] {
+    private static _checkIfNodeMatchSearchCriterion(node: Node, searchCriterion: SearchCriteriaModel[]): boolean {
+        for (let currentCriteria of searchCriterion) {
+            if (currentCriteria.attributePathElements.length > 0) {
+                const retrievedInitialAttributeValue: any | undefined = node._getAttr(currentCriteria.attributePathElements[0]);
+                // We get the initial value using the _getAttr function of the node, which will then navigated 
+                // into with the loop below if the search criterion has more than one attributePathElements. 
+                if (retrievedInitialAttributeValue == undefined) {
+                    return false;
+                } else {
+                    let currentNavigatedItemData = retrievedInitialAttributeValue;
+                    const followingAttributePathElements = currentCriteria.attributePathElements.slice(1);
+                    for (let nestedPathElement of followingAttributePathElements) {
+                        if (currentNavigatedItemData == undefined) {
+                            return false;
+                        } else {
+                            currentNavigatedItemData = currentNavigatedItemData[nestedPathElement];
+                        }
+                    }
+                    if (currentNavigatedItemData !== currentCriteria.expectedValue) {
+                        // After having fully completed the navigation inside the specified attribute path elements, we can compare the value the 
+                        // search criterion was targeting, to the expected value. If they are different, the search criterion is not fulfilled.
+                        return false;
+                    }
+                }
+            }
+        }
+        // If all the search criterion have been ran, and we did not returned false, 
+        // this means that all the search criterion passed and we are good to return true.
+        return true;
+    }
+    
+    searchNodes(searchCriterion: SearchCriteriaModel[]) {
         const foundNodes: Node[] = [];
         for (let nodeKeyId in this._idMap as { [key: string]: any }) {
             const node = this._idMap[nodeKeyId];
-            const retrievedAttributeValue = node._getAttr(attributeKey);
-            if (retrievedAttributeValue === attributeValue) {
+            const nodeValid = Model._checkIfNodeMatchSearchCriterion(node, searchCriterion);
+            if (nodeValid) {
                 foundNodes.push(node);
             }
         }
         return foundNodes;
     }
-
+    
     /**
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class

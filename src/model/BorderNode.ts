@@ -38,6 +38,7 @@ class BorderNode extends Node implements IDropTarget {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", BorderNode.TYPE, true);
         attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
+        attributeDefinitions.add("modelPayload", undefined).setType(Attribute.JSON);
 
         attributeDefinitions.add("selected", -1);
         attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN);

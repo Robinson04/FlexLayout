@@ -25,6 +25,7 @@ class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("type", TabNode.TYPE, true);
         attributeDefinitions.add("component", undefined, true).setType(Attribute.STRING);
         attributeDefinitions.add("id", undefined, true).setType(Attribute.ID);
+        attributeDefinitions.add("modelPayload", undefined).setType(Attribute.JSON);
 
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType(Attribute.JSON);
@@ -87,10 +88,6 @@ class TabNode extends Node implements IDraggable {
 
     getName() {
         return this._getAttr("name") as string;
-    }
-
-    getComponent() {
-        return this._getAttributeAsStringOrUndefined("component");
     }
 
     /**
