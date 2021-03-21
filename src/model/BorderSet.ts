@@ -27,6 +27,15 @@ class BorderSet {
     getBorders() {
         return this._borders;
     }
+    
+    makeOrganizedBorders(): { right: BorderNode, left: BorderNode, bottom: BorderNode } {
+        const output: { [key: string]: any } = {};
+        this._borders.forEach((borderNode) => {
+            const borderLocationName = borderNode.getLocation().getName();
+            output[borderLocationName] = borderNode;
+        });
+        return output as any;
+    }
 
     /** @hidden @internal */
     _forEachNode(fn: (node: Node, level: number) => void) {

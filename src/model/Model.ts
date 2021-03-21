@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import Attribute from "../Attribute";
 import AttributeDefinitions from "../AttributeDefinitions";
 import DockLocation from "../DockLocation";
@@ -20,7 +21,8 @@ import { v4 as uuid4 } from 'uuid';
 
 export interface SearchCriteriaModel {
     attributePathElements: string[];
-    expectedValue: any;
+    expectedValue?: any;
+    expectedValues?: any[];
 }
 
 
@@ -218,6 +220,10 @@ class Model {
         this._borders._forEachNode(fn);
         (this._root as RowNode)._forEachNode(fn, 0);
     }
+    
+    getNodesMap() {
+        return this._idMap;
+    }
 
     /**
      * Gets a node by its id
@@ -245,7 +251,9 @@ class Model {
                             currentNavigatedItemData = currentNavigatedItemData[nestedPathElement];
                         }
                     }
-                    if (currentNavigatedItemData !== currentCriteria.expectedValue) {
+                    if ((currentCriteria.expectedValue != undefined && currentNavigatedItemData !== currentCriteria.expectedValue) || 
+                        (currentCriteria.expectedValues != undefined && !_.includes(currentCriteria.expectedValues, currentNavigatedItemData))
+                    ) {
                         // After having fully completed the navigation inside the specified attribute path elements, we can compare the value the 
                         // search criterion was targeting, to the expected value. If they are different, the search criterion is not fulfilled.
                         return false;
