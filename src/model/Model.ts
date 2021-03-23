@@ -233,51 +233,6 @@ class Model {
         return this._idMap[id];
     }
     
-    private static _checkIfNodeMatchSearchCriterion(node: Node, searchCriterion: SearchCriteriaModel[]): boolean {
-        for (let currentCriteria of searchCriterion) {
-            if (currentCriteria.attributePathElements.length > 0) {
-                const retrievedInitialAttributeValue: any | undefined = node._getAttr(currentCriteria.attributePathElements[0]);
-                // We get the initial value using the _getAttr function of the node, which will then navigated 
-                // into with the loop below if the search criterion has more than one attributePathElements. 
-                if (retrievedInitialAttributeValue == undefined) {
-                    return false;
-                } else {
-                    let currentNavigatedItemData = retrievedInitialAttributeValue;
-                    const followingAttributePathElements = currentCriteria.attributePathElements.slice(1);
-                    for (let nestedPathElement of followingAttributePathElements) {
-                        if (currentNavigatedItemData == undefined) {
-                            return false;
-                        } else {
-                            currentNavigatedItemData = currentNavigatedItemData[nestedPathElement];
-                        }
-                    }
-                    if ((currentCriteria.expectedValue != undefined && currentNavigatedItemData !== currentCriteria.expectedValue) || 
-                        (currentCriteria.expectedValues != undefined && !_.includes(currentCriteria.expectedValues, currentNavigatedItemData))
-                    ) {
-                        // After having fully completed the navigation inside the specified attribute path elements, we can compare the value the 
-                        // search criterion was targeting, to the expected value. If they are different, the search criterion is not fulfilled.
-                        return false;
-                    }
-                }
-            }
-        }
-        // If all the search criterion have been ran, and we did not returned false, 
-        // this means that all the search criterion passed and we are good to return true.
-        return true;
-    }
-    
-    searchNodes(searchCriterion: SearchCriteriaModel[]) {
-        const foundNodes: Node[] = [];
-        for (let nodeKeyId in this._idMap as { [key: string]: any }) {
-            const node = this._idMap[nodeKeyId];
-            const nodeValid = Model._checkIfNodeMatchSearchCriterion(node, searchCriterion);
-            if (nodeValid) {
-                foundNodes.push(node);
-            }
-        }
-        return foundNodes;
-    }
-    
     /**
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class
